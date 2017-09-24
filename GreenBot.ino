@@ -90,7 +90,7 @@ void setup()
   digitalWrite(EN_PIN_1, HIGH);
   digitalWrite(EN_PIN_2, HIGH);
   esc1.writeMicroseconds(700); //LOW for ESC
-  delay(60000); // 30 seconds before starting
+  delay(10000); // 10 seconds before starting
 
 }
 
@@ -119,6 +119,8 @@ void loop()
     esc1.writeMicroseconds(700);
     delay(5000);
 
+    esc1.writeMicroseconds(900);
+    delay(1000);
     Forward(CRUISE_SPEED);
     delay(3000);
     Stop();
@@ -127,7 +129,7 @@ void loop()
     delay(3000);
     Stop();
 
-    delay(60000);
+    delay(10000); // 10 seconds pause
 
     
 }
@@ -250,3 +252,4 @@ int get_distance(){
    Serial.println("Distance: " + (String) (duration*0.034/2));
    return duration*0.034/2;
 }
+
