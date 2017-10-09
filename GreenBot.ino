@@ -30,16 +30,17 @@
 #define MOTOR_2 1
 
 //DISTANCE SENSOR
-#define DISTANCE_ECHO 12
-#define DISTANCE_TRIGGER 13
-#define DISTANCE_ENABLED 0
+#define DISTANCE_ECHO 3
+#define DISTANCE_TRIGGER 2
+#define DISTANCE_ENABLED 1
+#define DISTANCE_MIN 30
 
 //ESC
 #define ESC_SIG 10
 
 //MAX SPEED FOR BATTERY
 #define MAX_SPEED 110
-#define CRUISE_SPEED 80
+#define CRUISE_SPEED 90
 
 short usSpeed = 150;  //default motor speed
 unsigned short usMotor_Status = BRAKE;
@@ -48,10 +49,13 @@ Servo esc1;
  
 void setup()                         
 {
+  Serial.begin(9600);              // Initiates the serial to do the monitoring 
+  randomSeed(analogRead(0));
 
   esc1.attach(ESC_SIG); 
 
   if(DISTANCE_ENABLED){
+     Serial.println("Distance sensor is ON");
      pinMode(DISTANCE_TRIGGER, OUTPUT); // Sets the trigPin as an Output
      pinMode(DISTANCE_ECHO, INPUT); // Sets the echoPin as an Input
   }
@@ -75,7 +79,7 @@ void setup()
      digitalWrite(DISTANCE_TRIGGER, LOW);
   }
 
-  Serial.begin(9600);              // Initiates the serial to do the monitoring 
+  
   Serial.println("Begin motor control");
   Serial.println(); //Print function list for user selection
   /*Serial.println("Enter number for control option:");
@@ -114,24 +118,28 @@ void loop()
     Stop();
     delay(2000);*/
 
-    esc1.writeMicroseconds(900);
-    delay(1000);
-    esc1.writeMicroseconds(700);
-    delay(5000);
-
-    esc1.writeMicroseconds(900);
-    delay(1000);
-    Forward(CRUISE_SPEED);
-    delay(3000);
+    //esc1.writeMicroseconds(900);
+    //delay(1000);
+    //esc1.writeMicroseconds(700);
+    //delay(5000);
+    while (get_distance() > DISTANCE_MIN){
+       esc1.writeMicroseconds(1100);
+       delay(500);
+       Forward(CRUISE_SPEED);
+    }
     Stop();
-    delay(3000);
-    Turn(CRUISE_SPEED);
-    delay(3000);
+    delay(1000);
+    Reverse(CRUISE_SPEED);
+    delay(1500);
     Stop();
-
-    delay(10000); // 10 seconds pause
-
-    
+    long randNumber = random(0, 100);
+    if (randNumber<50){
+       TurnR(CRUISE_SPEED);
+    }
+    else{
+       TurnL(CRUISE_SPEED);
+    }
+    delay(1000);    
 }
 
 void Stop()
@@ -158,12 +166,20 @@ void Reverse(int speed)
   motorGo(MOTOR_2, CW, speed);
 }
 
-void Turn(int speed)
+void TurnR(int speed)
 {
   Serial.println("Turn" + (String) speed);
   usMotor_Status = CCW;
   motorGo(MOTOR_1, CW, speed);
   motorGo(MOTOR_2, CW, speed);
+}
+
+void TurnL(int speed)
+{
+  Serial.println("Turn" + (String) speed);
+  usMotor_Status = CCW;
+  motorGo(MOTOR_1, CCW, speed);
+  motorGo(MOTOR_2, CCW, speed);
 }
 
 void IncreaseSpeed()
